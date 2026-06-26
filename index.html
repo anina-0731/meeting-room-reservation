@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>会议室预定与课程场地记录日历</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>会议室与课程看板</h2>
+            <p>数据已启用 LocalStorage 本地持久化</p>
+        </div>
+        
+        <div class="form-container">
+            <form id="bookingForm">
+                <div class="form-group">
+                    <label for="date">选择日期 *</label>
+                    <input type="date" id="date" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>时间段 *</label>
+                    <div class="time-range">
+                        <input type="time" id="startTime" class="form-control" required>
+                        <span style="color: #a0aec0;">至</span>
+                        <input type="time" id="endTime" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="room">楼层与房间 *</label>
+                    <select id="room" class="form-control" required>
+                        <option value="need_book">⚠️ 需要预定！（未定房号）</option>
+                        <option value="23_meet">🏢 23楼：会议室</option>
+                        <option value="23_chat">🏢 23楼：洽谈室</option>
+                        <option value="27_meet">🏢 27楼：会议室</option>
+                        <option value="27_chat">🏢 27楼：洽谈室</option>
+                        <option value="32_road">🏛️ 32楼：路演厅</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="purposeSelect">用途类型 *</label>
+                    <select id="purposeSelect" class="form-control" onchange="toggleCustomPurpose(this.value)">
+                        <option value="新员工第一课">新员工第一课</option>
+                        <option value="新员工政策宣导&APN系统宣讲">新员工政策宣导&APN系统宣讲</option>
+                        <option value="IPG 1.0">IPG 1.0</option>
+                        <option value="IPG领航者计划">IPG领航者计划</option>
+                        <option value="IPG 2.0">IPG 2.0</option>
+                        <option value="CUSTOM">➕ 手动填写其他用途...</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="customPurposeGroup" style="display: none;">
+                    <label for="customPurpose">手动输入用途 *</label>
+                    <input type="text" id="customPurpose" class="form-control" placeholder="请输入具体课程或会议名称">
+                </div>
+
+                <div class="form-group">
+                    <label for="memo">备注信息</label>
+                    <textarea id="memo" class="form-control" rows="3" placeholder="讲师、特殊设备或参会人数等..."></textarea>
+                </div>
+
+                <button type="submit" class="btn">确认保存记录</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="calendar-header">
+            <div class="calendar-title" id="calendarTitle">2026年 05月</div>
+            <div class="nav-buttons">
+                <button onclick="changeMonth(-1)">上个月</button>
+                <button onclick="toToday()">今天</button>
+                <button onclick="changeMonth(1)">下个月</button>
+            </div>
+        </div>
+        
+        <div class="weekdays">
+            <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
+        </div>
+        
+        <div class="days-grid" id="daysGrid">
+            </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 id="modalDateTitle">预定清单详情</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
