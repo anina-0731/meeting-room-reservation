@@ -3,30 +3,231 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>会议室预定与课程场地记录日历</title>
-    <link rel="stylesheet" href="style.css">
+    <title>会议室预定与课程场地记录日历 - 旗舰升级版</title>
+    <style>
+        /* ==========================================================================
+           1. 全局样式与核心商务色彩
+           ========================================================================== */
+        :root {
+            --primary-color: #2b6cb0;
+            --bg-color: #f7fafc;
+            --card-bg: #ffffff;
+            --text-color: #2d3748;
+            --border-color: #e2e8f0;
+            --sidebar-width: 380px;
+
+            /* 核心业务颜色配置 */
+            --color-need-book: #fff5f5;      /* 待预定：淡红 */
+            --color-need-book-text: #e53e3e; 
+            
+            --color-23-meet: #ebf8ff;        /* 23F 会议室：淡蓝 */
+            --color-23-meet-text: #2b6cb0;
+            --color-23-chat: #e6fffa;        /* 23F 洽谈室：淡青 */
+            --color-23-chat-text: #319795;
+            
+            --color-27-meet: #f0fff4;        /* 27F 会议室：淡绿 */
+            --color-27-meet-text: #38a169;
+            --color-27-chat: #faf5ff;        /* 27F 洽谈室：淡紫 */
+            --color-27-chat-text: #805ad5;
+            
+            --color-32-road: #fffaf0;        /* 32F 路演厅：淡橙 */
+            --color-32-road-text: #dd6b20;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ==========================================================================
+           2. 左侧侧边栏样式（支持多选批量排课）
+           ========================================================================== */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(145deg, #ffffff, #fcfcfc);
+        }
+        .sidebar-header h2 { font-size: 18px; color: #1a202c; display: flex; align-items: center; gap: 6px;}
+        .sidebar-header p { font-size: 12px; color: #718096; margin-top: 4px; }
+
+        .form-container { padding: 20px; overflow-y: auto; flex: 1; }
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #4a5568; }
+        .form-control {
+            width: 100%; padding: 8px 12px; font-size: 14px;
+            border: 1px solid var(--border-color); border-radius: 6px; outline: none;
+        }
+        .form-control:focus { border-color: var(--primary-color); box-shadow: 0 0 0 2px rgba(43,108,176,0.1); }
+        .time-range { display: flex; gap: 8px; align-items: center; }
+
+        /* 批量日期多选区域样式 */
+        .multi-date-box {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px;
+            max-height: 130px;
+            overflow-y: auto;
+            background: #fafafa;
+        }
+        .date-chip-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #edf2f7;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+        .date-chip-delete {
+            color: #e53e3e;
+            cursor: pointer;
+            font-weight: bold;
+            margin-left: 6px;
+        }
+        .date-adder-row {
+            display: flex;
+            gap: 6px;
+            margin-top: 6px;
+        }
+
+        /* 房间下拉单项彩色 */
+        select#room option[value="need_book"] { background-color: var(--color-need-book); color: var(--color-need-book-text); }
+        select#room option[value="23_meet"] { background-color: var(--color-23-meet); color: var(--color-23-meet-text); }
+        select#room option[value="23_chat"] { background-color: var(--color-23-chat); color: var(--color-23-chat-text); }
+        select#room option[value="27_meet"] { background-color: var(--color-27-meet); color: var(--color-27-meet-text); }
+        select#room option[value="27_chat"] { background-color: var(--color-27-chat); color: var(--color-27-chat-text); }
+        select#room option[value="32_road"] { background-color: var(--color-32-road); color: var(--color-32-road-text); }
+
+        .btn {
+            width: 100%; padding: 10px; background-color: var(--primary-color); color: white;
+            border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn:hover { background-color: #1a4971; }
+
+        /* ==========================================================================
+           3. 右侧日历主面板
+           ========================================================================== */
+        .main-content { flex: 1; display: flex; flex-direction: column; height: 100%; padding: 20px; }
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .calendar-title { font-size: 22px; font-weight: bold; color: #1a202c; }
+        .nav-buttons button { padding: 6px 12px; border: 1px solid var(--border-color); background: white; cursor: pointer; border-radius: 4px; font-size: 13px; }
+        .nav-buttons button:hover { background: #edf2f7; }
+
+        .weekdays {
+            display: grid; grid-template-columns: repeat(7, 1fr); text-align: center;
+            font-weight: 600; color: #718096; font-size: 13px; padding-bottom: 8px;
+        }
+        .days-grid {
+            display: grid; grid-template-columns: repeat(7, 1fr); grid-template-rows: repeat(6, 1fr);
+            flex: 1; background-color: var(--border-color); gap: 1px; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden;
+        }
+
+        /* 单个日历格子 */
+        .day-cell {
+            background-color: white; padding: 4px; display: flex; flex-direction: column;
+            cursor: pointer; position: relative; overflow: hidden;
+        }
+        .day-cell:hover { filter: brightness(0.97); }
+        .day-cell.other-month { background-color: #edf2f7; color: #cbd5e0; }
+        .day-cell.today { background-color: #fffaf0; }
+        .day-cell.today .day-number { background-color: #dd6b20; color: white; border-radius: 50%; width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; }
+
+        .day-number { font-size: 12px; font-weight: 600; margin-bottom: 3px; color: #4a5568; }
+        .cell-events-container { display: flex; flex-direction: column; gap: 2px; flex: 1; overflow: hidden; }
+
+        /* 单元格微型状态标签 */
+        .event-tag {
+            font-size: 11px; padding: 1px 4px; border-radius: 3px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; font-weight: 500;
+        }
+
+        /* 大面积色彩覆盖逻辑样式 */
+        .day-cell.status-need-book { background-color: var(--color-need-book) !important; }
+        .day-cell.status-need-book .day-number { color: var(--color-need-book-text); }
+
+        .tag-need_book { background-color: #feb2b2; color: #9b2c2c; }
+        .tag-23_meet { background-color: var(--color-23-meet); color: var(--color-23-meet-text); }
+        .tag-23_chat { background-color: var(--color-23-chat); color: var(--color-23-chat-text); }
+        .tag-27_meet { background-color: var(--color-27-meet); color: var(--color-27-meet-text); }
+        .tag-27_chat { background-color: var(--color-27-chat); color: var(--color-27-chat-text); }
+        .tag-32_road { background-color: var(--color-32-road); color: var(--color-32-road-text); }
+
+        /* ==========================================================================
+           4. 智能流转模态弹窗
+           ========================================================================== */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4);
+            display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 999;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-card { background: white; border-radius: 8px; width: 540px; max-width: 90%; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+        .modal-header { padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .close-btn { font-size: 24px; cursor: pointer; border: none; background: none; color: #a0aec0; }
+        .modal-body { padding: 16px; overflow-y: auto; flex: 1; }
+
+        /* 预定清单独立卡片 */
+        .detail-item { border: 1px solid var(--border-color); border-radius: 6px; padding: 14px; margin-bottom: 12px; position: relative; background: #ffffff;}
+        .detail-item-time { font-size: 12px; color: #718096; font-weight: bold; }
+        .detail-item-title { font-size: 14px; font-weight: bold; margin: 4px 0; }
+        .detail-item-meta { font-size: 12px; display: inline-block; padding: 2px 6px; border-radius: 4px; margin-top: 4px; font-weight: 500;}
+        .detail-item-memo { font-size: 12px; color: #4a5568; background: #f7fafc; padding: 6px; border-radius: 4px; margin-top: 6px;}
+
+        /* 操作按钮组工具栏 */
+        .action-bar { display: flex; gap: 8px; margin-top: 12px; border-top: 1px dashed #edf2f7; padding-top: 10px; justify-content: flex-end; }
+        .btn-sm { padding: 4px 10px; font-size: 12px; border-radius: 4px; cursor: pointer; font-weight: 500; border: none;}
+        .btn-delete { background: #fed7d7; color: #c53030; }
+        .btn-delete:hover { background: #feb2b2; }
+        .btn-convert { background: #ebf8ff; color: #2b6cb0; border: 1px solid #bee3f8; }
+        .btn-convert:hover { background: #dee3f8; }
+
+        /* 智能就地流转选择框布局 */
+        .quick-convert-box { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; margin-top: 8px; display: flex; flex-direction: column; gap: 8px;}
+        .quick-convert-row { display: flex; gap: 6px; align-items: center;}
+        
+        .no-data { text-align: center; color: #a0aec0; padding: 20px 0; font-size: 14px; }
+    </style>
 </head>
 <body>
 
     <div class="sidebar">
         <div class="sidebar-header">
-            <h2>会议室与课程看板</h2>
-            <p>数据已启用 LocalStorage 本地持久化</p>
+            <h2>会议室排课看板 🚀</h2>
+            <p>已升级多日期批量排课与状态秒级转换</p>
         </div>
         
         <div class="form-container">
             <form id="bookingForm">
                 <div class="form-group">
-                    <label for="date">选择日期 *</label>
-                    <input type="date" id="date" class="form-control" required>
+                    <label>选择排课日期（可添加多个日期批量处理）*</label>
+                    <div class="multi-date-box" id="selectedDatesContainer">
+                        </div>
+                    <div class="date-adder-row">
+                        <input type="date" id="dateInput" class="form-control" style="flex: 1;">
+                        <button type="button" class="btn" style="width: auto; padding: 0 12px; font-size: 12px;" onclick="addDateToList()">＋ 添加</button>
+                    </div>
                 </div>
                 
                 <div class="form-group">
                     <label>时间段 *</label>
                     <div class="time-range">
-                        <input type="time" id="startTime" class="form-control" required>
+                        <input type="time" id="startTime" class="form-control" required value="09:00">
                         <span style="color: #a0aec0;">至</span>
-                        <input type="time" id="endTime" class="form-control" required>
+                        <input type="time" id="endTime" class="form-control" required value="10:30">
                     </div>
                 </div>
 
@@ -61,10 +262,10 @@
 
                 <div class="form-group">
                     <label for="memo">备注信息</label>
-                    <textarea id="memo" class="form-control" rows="3" placeholder="讲师、特殊设备或参会人数等..."></textarea>
+                    <textarea id="memo" class="form-control" rows="2" placeholder="讲师、设备等特殊诉求..."></textarea>
                 </div>
 
-                <button type="submit" class="btn">确认保存记录</button>
+                <button type="submit" class="btn">一键保存/批量排课</button>
             </form>
         </div>
     </div>
@@ -98,6 +299,318 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        const ROOM_MAP = {
+            'need_book': { name: '⚠️待预定', class: 'tag-need_book', bgVar: '--color-need-book' },
+            '23_meet': { name: '23F 会议室', class: 'tag-23_meet', bgVar: '--color-23-meet' },
+            '23_chat': { name: '23F 洽谈室', class: 'tag-23_chat', bgVar: '--color-23-chat' },
+            '27_meet': { name: '27F 会议室', class: 'tag-27_meet', bgVar: '--color-27-meet' },
+            '27_chat': { name: '27F 洽谈室', class: 'tag-27_chat', bgVar: '--color-27-chat' },
+            '32_road': { name: '32F 路演厅', class: 'tag-32_road', bgVar: '--color-32-road' }
+        };
+
+        let currentDate = new Date();
+        let bookings = JSON.parse(localStorage.getItem('ipro_bookings')) || [];
+        let activeBatchDates = []; // 当前左侧选中的批量排课日期数组
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化将今天注入到多选日期列表中，免去手动初选
+            const todayStr = new Date().toISOString().split('T')[0];
+            activeBatchDates.push(todayStr);
+            refreshDateChips();
+            
+            renderCalendar();
+        });
+
+        // 刷新多选日期标签显示
+        function refreshDateChips() {
+            const container = document.getElementById('selectedDatesContainer');
+            container.innerHTML = '';
+            if(activeBatchDates.length === 0) {
+                container.innerHTML = '<span style="color: #a0aec0; font-size: 12px;">暂无日期，请在下方选择并添加</span>';
+                return;
+            }
+            activeBatchDates.sort().forEach(d => {
+                const chip = document.createElement('div');
+                chip.className = 'date-chip-item';
+                chip.innerHTML = `<span>📅 ${d}</span><span class="date-chip-delete" onclick="removeDateFromList('${d}')">×</span>`;
+                container.appendChild(chip);
+            });
+        }
+
+        // 添加日期到待批量列表
+        function addDateToList() {
+            const input = document.getElementById('dateInput');
+            const dateVal = input.value;
+            if(!dateVal) return alert('请先选择一个合法日期！');
+            if(activeBatchDates.includes(dateVal)) return alert('该日期已在列表中，无需重复添加。');
+            activeBatchDates.push(dateVal);
+            refreshDateChips();
+            input.value = '';
+        }
+
+        // 从待批量列表中移除单项日期
+        function removeDateFromList(dateStr) {
+            activeBatchDates = activeBatchDates.filter(d => d !== dateStr);
+            refreshDateChips();
+        }
+
+        function toggleCustomPurpose(value) {
+            const group = document.getElementById('customPurposeGroup');
+            const input = document.getElementById('customPurpose');
+            if (value === 'CUSTOM') {
+                group.style.display = 'block';
+                input.required = true;
+            } else {
+                group.style.display = 'none';
+                input.required = false;
+            }
+        }
+
+        // 主日历渲染逻辑
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            document.getElementById('calendarTitle').innerText = `${year}年 ${(month + 1).toString().padStart(2, '0')}月`;
+            const daysGrid = document.getElementById('daysGrid');
+            daysGrid.innerHTML = '';
+
+            const firstDayIndex = new Date(year, month, 1).getDay();
+            const totalDays = new Date(year, month + 1, 0).getDate();
+            const prevTotalDays = new Date(year, month, 0).getDate();
+
+            // 1. 上月遗留格子
+            for (let i = firstDayIndex - 1; i >= 0; i--) {
+                const dayNum = prevTotalDays - i;
+                const prevMonth = month === 0 ? 11 : month - 1;
+                const prevYear = month === 0 ? year - 1 : year;
+                const dateStr = `${prevYear}-${(prevMonth + 1).toString().padStart(2, '0')}-${dayNum.toString().padStart(2, '0')}`;
+                daysGrid.appendChild(createDayCell(dayNum, dateStr, true));
+            }
+
+            // 2. 本月核心网格
+            const todayObj = new Date();
+            for (let day = 1; day <= totalDays; day++) {
+                const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+                const isToday = todayObj.getFullYear() === year && todayObj.getMonth() === month && todayObj.getDate() === day;
+                daysGrid.appendChild(createDayCell(day, dateStr, false, isToday));
+            }
+
+            // 3. 下月补齐网格
+            const totalRendered = firstDayIndex + totalDays;
+            const nextMonthNeed = 42 - totalRendered;
+            for (let day = 1; day <= nextMonthNeed; day++) {
+                const nextMonth = month === 11 ? 0 : month + 1;
+                const nextYear = month === 11 ? year + 1 : year;
+                const dateStr = `${nextYear}-${(nextMonth + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+                daysGrid.appendChild(createDayCell(day, dateStr, true));
+            }
+        }
+
+        // 创建日历单元DOM
+        function createDayCell(dayNum, dateStr, isOtherMonth, isToday = false) {
+            const cell = document.createElement('div');
+            cell.className = `day-cell ${isOtherMonth ? 'other-month' : ''} ${isToday ? 'today' : ''}`;
+            
+            // 点击或双击均触发查看当天清单
+            cell.addEventListener('click', () => openModal(dateStr));
+            cell.addEventListener('dblclick', () => openModal(dateStr));
+
+            const numberDiv = document.createElement('div');
+            numberDiv.className = 'day-number';
+            numberDiv.innerHTML = `${dayNum}`;
+            cell.appendChild(numberDiv);
+
+            const eventsContainer = document.createElement('div');
+            eventsContainer.className = 'cell-events-container';
+
+            const dayBookings = bookings
+                .filter(b => b.date === dateStr)
+                .sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+            if (dayBookings.length > 0) {
+                // 如果单日包含任何一条“待预定”，全天强行警示淡红
+                const hasNeedBook = dayBookings.some(b => b.room === 'need_book');
+                if (hasNeedBook) {
+                    cell.classList.add('status-need-book');
+                } else {
+                    // 若都已成功闭环，则按照时间第一优先级的房间色做底色渲染
+                    const firstRoomType = dayBookings[0].room;
+                    const roomConfig = ROOM_MAP[firstRoomType];
+                    if (roomConfig) {
+                        cell.style.backgroundColor = `var(${roomConfig.bgVar})`;
+                    }
+                }
+
+                dayBookings.forEach(book => {
+                    const tag = document.createElement('div');
+                    const roomInfo = ROOM_MAP[book.room] || ROOM_MAP['need_book'];
+                    tag.className = `event-tag ${roomInfo.class}`;
+                    tag.innerText = `${book.startTime} ${roomInfo.name}-${book.purpose}`;
+                    eventsContainer.appendChild(tag);
+                });
+            }
+
+            cell.appendChild(eventsContainer);
+            return cell;
+        }
+
+        function changeMonth(direction) {
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            renderCalendar();
+        }
+
+        function toToday() {
+            currentDate = new Date();
+            renderCalendar();
+        }
+
+        // 提交表单：支持多选批量灌入数据
+        document.getElementById('bookingForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            if(activeBatchDates.length === 0) {
+                alert('提交失败：请至少选择/添加一个排课日期！');
+                return;
+            }
+
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
+            const room = document.getElementById('room').value;
+            const purposeSelect = document.getElementById('purposeSelect').value;
+            
+            let purpose = purposeSelect;
+            if (purposeSelect === 'CUSTOM') {
+                purpose = document.getElementById('customPurpose').value.trim();
+                if (!purpose) return alert('请输入自定义用途名称！');
+            }
+
+            const memo = document.getElementById('memo').value.trim();
+
+            if (startTime >= endTime) {
+                alert('时间差错：结束时间必须晚于开始时间！');
+                return;
+            }
+
+            // 循环遍历，将数据批量灌入数组中
+            activeBatchDates.forEach(date => {
+                const newRecord = {
+                    id: `${Date.now()}-${Math.random().toString(36).substr(2, 5)}`, // 高并发微秒加盐唯一ID
+                    date,
+                    startTime,
+                    endTime,
+                    room,
+                    purpose,
+                    memo
+                };
+                bookings.push(newRecord);
+            });
+
+            localStorage.setItem('ipro_bookings', JSON.stringify(bookings));
+            alert(`成功为这 ${activeBatchDates.length} 个日期批量排课/登记！`);
+            
+            // 恢复初始表单环境，保留日期选择列表供微调，或手动在此清空
+            document.getElementById('memo').value = '';
+            if (purposeSelect === 'CUSTOM') {
+                document.getElementById('bookingForm').reset();
+                toggleCustomPurpose('');
+            }
+            renderCalendar();
+        });
+
+        // 开启查看详情弹窗（融合核心无痛快捷变更逻辑）
+        function openModal(dateStr) {
+            document.getElementById('modalDateTitle').innerText = `${dateStr} 场地看板详情与快捷流转`;
+            const body = document.getElementById('modalBody');
+            body.innerHTML = '';
+
+            const dayBookings = bookings
+                .filter(b => b.date === dateStr)
+                .sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+            if (dayBookings.length === 0) {
+                body.innerHTML = '<div class="no-data">当天无任何排课及场地安排记录。</div>';
+            } else {
+                dayBookings.forEach(b => {
+                    const roomInfo = ROOM_MAP[b.room] || ROOM_MAP['need_book'];
+                    const item = document.createElement('div');
+                    item.className = 'detail-item';
+                    
+                    let actionHtml = '';
+                    
+                    // 核心逻辑升级：如果状态是“需要预定”，直接显示快捷转换下拉器，免去先删后加
+                    if(b.room === 'need_book') {
+                        actionHtml = `
+                            <div class="quick-convert-box" id="convert-box-${b.id}">
+                                <span style="font-size: 12px; font-weight: bold; color: #2c5282;">⚡ 预订部已改好？在此一键分配房间：</span>
+                                <div class="quick-convert-row">
+                                    <select class="form-control" id="select-convert-${b.id}" style="padding:4px 8px; font-size:12px;">
+                                        <option value="23_meet">🏢 23楼：会议室</option>
+                                        <option value="23_chat">🏢 23楼：洽谈室</option>
+                                        <option value="27_meet">🏢 27楼：会议室</option>
+                                        <option value="27_chat">🏢 27楼：洽谈室</option>
+                                        <option value="32_road">🏛️ 32楼：路演厅</option>
+                                    </select>
+                                    <button class="btn-sm btn-convert" onclick="executeQuickConvert('${b.id}', '${dateStr}')">确认指派</button>
+                                    <button class="btn-sm btn-delete" style="background:#edf2f7; color:#4a5568;" onclick="deleteBooking('${b.id}', '${dateStr}', true)">不需要了(直接取消)</button>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        // 如果是正常锁定的房间，显示普通删除释放按钮
+                        actionHtml = `
+                            <div class="action-bar">
+                                <button class="btn-sm btn-delete" onclick="deleteBooking('${b.id}', '${dateStr}')">释放并删除</button>
+                            </div>
+                        `;
+                    }
+
+                    item.innerHTML = `
+                        <div class="detail-item-time">⏰ 时段：${b.startTime} - ${b.endTime}</div>
+                        <div class="detail-item-title">📋 项目用途：${b.purpose}</div>
+                        <span class="detail-item-meta ${roomInfo.class}">📍 状态/空间：${roomInfo.name}</span>
+                        ${b.memo ? `<div class="detail-item-memo"><strong>📝 备注：</strong>${b.memo}</div>` : ''}
+                        ${actionHtml}
+                    `;
+                    body.appendChild(item);
+                });
+            }
+
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        // 核心就地流转：直接原地修改房间状态，保持所有其他信息不变
+        function executeQuickConvert(id, dateStr) {
+            const selectEl = document.getElementById(`select-convert-${id}`);
+            const chosenRoom = selectEl.value;
+            
+            // 找出那条待转数据直接修改
+            const target = bookings.find(b => b.id === id);
+            if(target) {
+                target.room = chosenRoom;
+                localStorage.setItem('ipro_bookings', JSON.stringify(bookings));
+                
+                // 丝滑局部刷新
+                openModal(dateStr);
+                renderCalendar();
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+        }
+
+        // 移除单条
+        function deleteBooking(id, dateStr, isSilent = false) {
+            const msg = isSilent ? '确认当天确实不需要预定会议室，直接取消吗？' : '确认要删除并释放这条场地预定记录吗？';
+            if (confirm(msg)) {
+                bookings = bookings.filter(b => b.id !== id);
+                localStorage.setItem('ipro_bookings', JSON.stringify(bookings));
+                openModal(dateStr);
+                renderCalendar();
+            }
+        }
+    </script>
 </body>
 </html>
