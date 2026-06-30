@@ -7,7 +7,7 @@
     <style>
         /* ==========================================================================
            1. 全局样式与核心商务色彩
-           ========================================================================== */
+           ========================================================================= */
         :root {
             --primary-color: #2b6cb0;
             --bg-color: #f7fafc;
@@ -46,7 +46,7 @@
 
         /* ==========================================================================
            2. 左侧侧边栏样式（支持多选批量排课）
-           ========================================================================== */
+           ========================================================================= */
         .sidebar {
             width: var(--sidebar-width);
             background-color: var(--card-bg);
@@ -121,7 +121,7 @@
 
         /* ==========================================================================
            3. 右侧日历主面板
-           ========================================================================== */
+           ========================================================================= */
         .main-content { flex: 1; display: flex; flex-direction: column; height: 100%; padding: 20px; }
         .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .calendar-title { font-size: 22px; font-weight: bold; color: #1a202c; }
@@ -169,7 +169,7 @@
 
         /* ==========================================================================
            4. 智能流转模态弹窗
-           ========================================================================== */
+           ========================================================================= */
         .modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4);
             display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 999;
@@ -204,6 +204,7 @@
 </head>
 <body>
 
+    <!-- 左侧边栏：多选排课表单区 -->
     <div class="sidebar">
         <div class="sidebar-header">
             <h2>会议室排课看板 🚀</h2>
@@ -212,10 +213,12 @@
         
         <div class="form-container">
             <form id="bookingForm">
+                <!-- 多日期管理容器 -->
                 <div class="form-group">
                     <label>选择排课日期（可添加多个日期批量处理）*</label>
                     <div class="multi-date-box" id="selectedDatesContainer">
-                        </div>
+                        <!-- 动态生成的日期筹码标签 -->
+                    </div>
                     <div class="date-adder-row">
                         <input type="date" id="dateInput" class="form-control" style="flex: 1;">
                         <button type="button" class="btn" style="width: auto; padding: 0 12px; font-size: 12px;" onclick="addDateToList()">＋ 添加</button>
@@ -247,7 +250,8 @@
                     <label for="purposeSelect">用途类型 *</label>
                     <select id="purposeSelect" class="form-control" onchange="toggleCustomPurpose(this.value)">
                         <option value="新员工第一课">新员工第一课</option>
-                        <option value="新员工政策宣导&APN系统宣讲">新员工政策宣导&APN系统宣讲</option>
+                        <option value="新员工政策宣导">新员工政策宣导</option>
+                        <option value="APN宣讲">APN宣讲</option>
                         <option value="IPG 1.0">IPG 1.0</option>
                         <option value="IPG领航者计划">IPG领航者计划</option>
                         <option value="IPG 2.0">IPG 2.0</option>
@@ -270,6 +274,7 @@
         </div>
     </div>
 
+    <!-- 右侧主体：主日历 -->
     <div class="main-content">
         <div class="calendar-header">
             <div class="calendar-title" id="calendarTitle">2026年 05月</div>
@@ -285,9 +290,11 @@
         </div>
         
         <div class="days-grid" id="daysGrid">
-            </div>
+            <!-- 动态载入 -->
+        </div>
     </div>
 
+    <!-- 弹窗：单日详情查看与智能就地转换 -->
     <div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
         <div class="modal-card" onclick="event.stopPropagation()">
             <div class="modal-header">
@@ -295,10 +302,14 @@
                 <button class="close-btn" onclick="closeModal()">&times;</button>
             </div>
             <div class="modal-body" id="modalBody">
-                </div>
+                <!-- 动态填充 -->
+            </div>
         </div>
     </div>
 
+    <!-- ==========================================================================
+       5. 智能业务核心核心逻辑脚本
+       ========================================================================= -->
     <script>
         const ROOM_MAP = {
             'need_book': { name: '⚠️待预定', class: 'tag-need_book', bgVar: '--color-need-book' },
@@ -311,18 +322,15 @@
 
         let currentDate = new Date();
         let bookings = JSON.parse(localStorage.getItem('ipro_bookings')) || [];
-        let activeBatchDates = []; // 当前左侧选中的批量排课日期数组
+        let activeBatchDates = []; 
 
         document.addEventListener('DOMContentLoaded', () => {
-            // 初始化将今天注入到多选日期列表中，免去手动初选
             const todayStr = new Date().toISOString().split('T')[0];
             activeBatchDates.push(todayStr);
             refreshDateChips();
-            
             renderCalendar();
         });
 
-        // 刷新多选日期标签显示
         function refreshDateChips() {
             const container = document.getElementById('selectedDatesContainer');
             container.innerHTML = '';
@@ -338,7 +346,6 @@
             });
         }
 
-        // 添加日期到待批量列表
         function addDateToList() {
             const input = document.getElementById('dateInput');
             const dateVal = input.value;
@@ -349,7 +356,6 @@
             input.value = '';
         }
 
-        // 从待批量列表中移除单项日期
         function removeDateFromList(dateStr) {
             activeBatchDates = activeBatchDates.filter(d => d !== dateStr);
             refreshDateChips();
@@ -367,7 +373,6 @@
             }
         }
 
-        // 主日历渲染逻辑
         function renderCalendar() {
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth();
@@ -380,7 +385,6 @@
             const totalDays = new Date(year, month + 1, 0).getDate();
             const prevTotalDays = new Date(year, month, 0).getDate();
 
-            // 1. 上月遗留格子
             for (let i = firstDayIndex - 1; i >= 0; i--) {
                 const dayNum = prevTotalDays - i;
                 const prevMonth = month === 0 ? 11 : month - 1;
@@ -389,7 +393,6 @@
                 daysGrid.appendChild(createDayCell(dayNum, dateStr, true));
             }
 
-            // 2. 本月核心网格
             const todayObj = new Date();
             for (let day = 1; day <= totalDays; day++) {
                 const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
@@ -397,7 +400,6 @@
                 daysGrid.appendChild(createDayCell(day, dateStr, false, isToday));
             }
 
-            // 3. 下月补齐网格
             const totalRendered = firstDayIndex + totalDays;
             const nextMonthNeed = 42 - totalRendered;
             for (let day = 1; day <= nextMonthNeed; day++) {
@@ -408,12 +410,10 @@
             }
         }
 
-        // 创建日历单元DOM
         function createDayCell(dayNum, dateStr, isOtherMonth, isToday = false) {
             const cell = document.createElement('div');
             cell.className = `day-cell ${isOtherMonth ? 'other-month' : ''} ${isToday ? 'today' : ''}`;
             
-            // 点击或双击均触发查看当天清单
             cell.addEventListener('click', () => openModal(dateStr));
             cell.addEventListener('dblclick', () => openModal(dateStr));
 
@@ -430,12 +430,10 @@
                 .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
             if (dayBookings.length > 0) {
-                // 如果单日包含任何一条“待预定”，全天强行警示淡红
                 const hasNeedBook = dayBookings.some(b => b.room === 'need_book');
                 if (hasNeedBook) {
                     cell.classList.add('status-need-book');
                 } else {
-                    // 若都已成功闭环，则按照时间第一优先级的房间色做底色渲染
                     const firstRoomType = dayBookings[0].room;
                     const roomConfig = ROOM_MAP[firstRoomType];
                     if (roomConfig) {
@@ -466,7 +464,6 @@
             renderCalendar();
         }
 
-        // 提交表单：支持多选批量灌入数据
         document.getElementById('bookingForm').addEventListener('submit', (e) => {
             e.preventDefault();
 
@@ -493,10 +490,9 @@
                 return;
             }
 
-            // 循环遍历，将数据批量灌入数组中
             activeBatchDates.forEach(date => {
                 const newRecord = {
-                    id: `${Date.now()}-${Math.random().toString(36).substr(2, 5)}`, // 高并发微秒加盐唯一ID
+                    id: `${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
                     date,
                     startTime,
                     endTime,
@@ -510,7 +506,6 @@
             localStorage.setItem('ipro_bookings', JSON.stringify(bookings));
             alert(`成功为这 ${activeBatchDates.length} 个日期批量排课/登记！`);
             
-            // 恢复初始表单环境，保留日期选择列表供微调，或手动在此清空
             document.getElementById('memo').value = '';
             if (purposeSelect === 'CUSTOM') {
                 document.getElementById('bookingForm').reset();
@@ -519,7 +514,6 @@
             renderCalendar();
         });
 
-        // 开启查看详情弹窗（融合核心无痛快捷变更逻辑）
         function openModal(dateStr) {
             document.getElementById('modalDateTitle').innerText = `${dateStr} 场地看板详情与快捷流转`;
             const body = document.getElementById('modalBody');
@@ -539,7 +533,6 @@
                     
                     let actionHtml = '';
                     
-                    // 核心逻辑升级：如果状态是“需要预定”，直接显示快捷转换下拉器，免去先删后加
                     if(b.room === 'need_book') {
                         actionHtml = `
                             <div class="quick-convert-box" id="convert-box-${b.id}">
@@ -558,7 +551,6 @@
                             </div>
                         `;
                     } else {
-                        // 如果是正常锁定的房间，显示普通删除释放按钮
                         actionHtml = `
                             <div class="action-bar">
                                 <button class="btn-sm btn-delete" onclick="deleteBooking('${b.id}', '${dateStr}')">释放并删除</button>
@@ -580,18 +572,15 @@
             document.getElementById('modalOverlay').classList.add('active');
         }
 
-        // 核心就地流转：直接原地修改房间状态，保持所有其他信息不变
         function executeQuickConvert(id, dateStr) {
             const selectEl = document.getElementById(`select-convert-${id}`);
             const chosenRoom = selectEl.value;
             
-            // 找出那条待转数据直接修改
             const target = bookings.find(b => b.id === id);
             if(target) {
                 target.room = chosenRoom;
                 localStorage.setItem('ipro_bookings', JSON.stringify(bookings));
                 
-                // 丝滑局部刷新
                 openModal(dateStr);
                 renderCalendar();
             }
@@ -601,7 +590,6 @@
             document.getElementById('modalOverlay').classList.remove('active');
         }
 
-        // 移除单条
         function deleteBooking(id, dateStr, isSilent = false) {
             const msg = isSilent ? '确认当天确实不需要预定会议室，直接取消吗？' : '确认要删除并释放这条场地预定记录吗？';
             if (confirm(msg)) {
