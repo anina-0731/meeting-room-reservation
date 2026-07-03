@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>会议室预定与课程场地记录日历 - 旗舰升级版</title>
+    <title>会议室预定与课程场地记录日历 - 安全隔离版</title>
     <style>
         /* ==========================================================================
            1. 全局样式与核心商务色彩
@@ -208,7 +208,7 @@
     <div class="sidebar">
         <div class="sidebar-header">
             <h2>会议室排课看板 🚀</h2>
-            <p>已升级多日期批量排课与状态秒级转换</p>
+            <p>已启用独立防冲突数据保护隔离仓</p>
         </div>
         
         <div class="form-container">
@@ -320,8 +320,17 @@
             '32_road': { name: '32F 路演厅', class: 'tag-32_road', bgVar: '--color-32-road' }
         };
 
+        // 【核心防御】使用全新专属独立Key，防止和小游戏撞车
+        const DB_KEY = 'ipro_calendar_v2_secure_store';
+        
         let currentDate = new Date();
-        let bookings = JSON.parse(localStorage.getItem('ipro_bookings')) || [];
+        // 尝试读取新Key，如果不存在则看看能不能兼容读取一次老Key
+        let bookings = JSON.parse(localStorage.getItem(DB_KEY));
+        if (!bookings) {
+            bookings = JSON.parse(localStorage.getItem('ipro_bookings')) || [];
+            localStorage.setItem(DB_KEY, JSON.stringify(bookings));
+        }
+        
         let activeBatchDates = []; 
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -503,7 +512,7 @@
                 bookings.push(newRecord);
             });
 
-            localStorage.setItem('ipro_bookings', JSON.stringify(bookings));
+            localStorage.setItem(DB_KEY, JSON.stringify(bookings));
             alert(`成功为这 ${activeBatchDates.length} 个日期批量排课/登记！`);
             
             document.getElementById('memo').value = '';
@@ -579,7 +588,7 @@
             const target = bookings.find(b => b.id === id);
             if(target) {
                 target.room = chosenRoom;
-                localStorage.setItem('ipro_bookings', JSON.stringify(bookings));
+                localStorage.setItem(DB_KEY, JSON.stringify(bookings));
                 
                 openModal(dateStr);
                 renderCalendar();
@@ -594,7 +603,7 @@
             const msg = isSilent ? '确认当天确实不需要预定会议室，直接取消吗？' : '确认要删除并释放这条场地预定记录吗？';
             if (confirm(msg)) {
                 bookings = bookings.filter(b => b.id !== id);
-                localStorage.setItem('ipro_bookings', JSON.stringify(bookings));
+                localStorage.setItem(DB_KEY, JSON.stringify(bookings));
                 openModal(dateStr);
                 renderCalendar();
             }
