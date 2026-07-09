@@ -3,40 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>会议室预定与课程场地记录日历 - 顶级双保险版</title>
+    <title>会议室预定与课程场地记录日历 - 极客蓝高级版</title>
     <style>
         /* ==========================================================================
-           1. 全局样式与核心商务色彩
+           1. 全局样式与科技蓝高级色系
            ========================================================================= */
         :root {
-            --primary-color: #2b6cb0;
-            --bg-color: #f7fafc;
-            --card-bg: #ffffff;
-            --text-color: #2d3748;
-            --border-color: #e2e8f0;
+            --primary-color: #1e3a8a;        /* 深科技蓝 */
+            --primary-light: #3b82f6;       /* 明亮天蓝 */
+            --bg-color: #f0f4f8;            /* 浅淡蓝灰背景 */
+            --card-bg: #ffffff;             /* 纯白卡片 */
+            --text-color: #1e293b;          /* 深蓝黑文字 */
+            --border-color: #cbd5e1;        /* 细腻边框线 */
             --sidebar-width: 380px;
 
-            /* 核心业务颜色配置 */
-            --color-need-book: #fff5f5;      /* 待预定：淡红 */
-            --color-need-book-text: #e53e3e; 
+            /* 核心业务颜色配置（保留区分度，调和为高雅低饱和色调） */
+            --color-need-book: #fef2f2;      /* 待预定：淡粉红 */
+            --color-need-book-text: #ef4444; 
             
-            --color-23-meet: #ebf8ff;        /* 23F 会议室：淡蓝 */
-            --color-23-meet-text: #2b6cb0;
-            --color-23-chat: #e6fffa;        /* 23F 洽谈室：淡青 */
-            --color-23-chat-text: #319795;
+            --color-23-meet: #eff6ff;        /* 23F 会议室：冰蓝 */
+            --color-23-meet-text: #2563eb;
+            --color-23-chat: #ecfdf5;        /* 23F 洽谈室：薄荷绿 */
+            --color-23-chat-text: #059669;
             
-            --color-27-meet: #f0fff4;        /* 27F 会议室：淡绿 */
-            --color-27-meet-text: #38a169;
-            --color-27-chat: #faf5ff;        /* 27F 洽谈室：淡紫 */
-            --color-27-chat-text: #805ad5;
+            --color-27-meet: #f0fdf4;        /* 27F 会议室：翠绿 */
+            --color-27-meet-text: #16a34a;
+            --color-27-chat: #faf5ff;        /* 27F 洽谈室：薰衣草紫 */
+            --color-27-chat-text: #7c3aed;
             
-            --color-32-road: #fffaf0;        /* 32F 路演厅：淡橙 */
-            --color-32-road-text: #dd6b20;
+            --color-32-road: #fff7ed;        /* 32F 路演厅：琥珀橙 */
+            --color-32-road-text: #ea580c;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             color: var(--text-color);
             background-color: var(--bg-color);
             display: flex;
@@ -45,7 +46,7 @@
         }
 
         /* ==========================================================================
-           2. 左侧侧边栏样式（支持多选批量排课）
+           2. 左侧侧边栏样式（高级质感面板）
            ========================================================================= */
         .sidebar {
             width: var(--sidebar-width);
@@ -54,70 +55,76 @@
             display: flex;
             flex-direction: column;
             height: 100%;
+            box-shadow: 4px 0 15px rgba(30, 58, 138, 0.05);
         }
         .sidebar-header {
-            padding: 20px;
-            border-bottom: 1px solid var(--border-color);
-            background: linear-gradient(145deg, #ffffff, #fcfcfc);
+            padding: 24px 20px;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
-        .sidebar-header h2 { font-size: 18px; color: #1a202c; display: flex; align-items: center; gap: 6px;}
-        .sidebar-header p { font-size: 12px; color: #718096; margin-top: 4px; }
+        .sidebar-header h2 { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 8px;}
+        .sidebar-header p { font-size: 12px; color: #bfdbfe; margin-top: 6px; opacity: 0.9; }
 
-        /* 备份工具条样式 */
+        /* 强力防御工具条美化 */
         .backup-toolbar {
             display: flex;
-            gap: 8px;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px dashed var(--border-color);
+            gap: 10px;
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.2);
         }
         .btn-backup {
-            flex: 1; padding: 6px; font-size: 12px; background: #edf2f7; color: #4a5568; 
-            border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer; font-weight: 500;
-            text-align: center;
+            flex: 1; padding: 8px; font-size: 12px; background: rgba(255, 255, 255, 0.15); color: white; 
+            border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 6px; cursor: pointer; font-weight: 600;
+            text-align: center; transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 4px;
         }
-        .btn-backup:hover { background: #e2e8f0; }
+        .btn-backup:hover { background: rgba(255, 255, 255, 0.3); border-color: white; transform: translateY(-1px); }
 
-        .form-container { padding: 20px; overflow-y: auto; flex: 1; }
-        .form-group { margin-bottom: 14px; }
-        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #4a5568; }
+        .form-container { padding: 20px; overflow-y: auto; flex: 1; background: #f8fafc;}
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #475569; }
         .form-control {
-            width: 100%; padding: 8px 12px; font-size: 14px;
-            border: 1px solid var(--border-color); border-radius: 6px; outline: none;
+            width: 100%; padding: 10px 12px; font-size: 14px; color: var(--text-color);
+            border: 1px solid #cbd5e1; border-radius: 8px; outline: none; background: white;
+            transition: all 0.2s;
         }
-        .form-control:focus { border-color: var(--primary-color); box-shadow: 0 0 0 2px rgba(43,108,176,0.1); }
+        .form-control:focus { border-color: var(--primary-light); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
         .time-range { display: flex; gap: 8px; align-items: center; }
 
-        /* 批量日期多选区域样式 */
+        /* 批量日期多选区域美化 */
         .multi-date-box {
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
             padding: 10px;
-            max-height: 130px;
+            max-height: 120px;
             overflow-y: auto;
-            background: #fafafa;
+            background: #ffffff;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+            margin-bottom: 6px;
         }
         .date-chip-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: #edf2f7;
-            padding: 4px 8px;
-            border-radius: 4px;
+            background: #e2e8f0;
+            padding: 6px 10px;
+            border-radius: 6px;
             font-size: 12px;
             margin-bottom: 4px;
+            font-weight: 500;
+            color: #334155;
         }
         .date-chip-delete {
-            color: #e53e3e;
+            color: #ef4444;
             cursor: pointer;
             font-weight: bold;
-            margin-left: 6px;
+            margin-left: 8px;
+            font-size: 14px;
         }
-        .date-adder-row {
-            display: flex;
-            gap: 6px;
-            margin-top: 6px;
-        }
+        .date-chip-delete:hover { color: #b91c1c; }
+        .date-adder-row { display: flex; gap: 6px; }
 
         /* 房间下拉单项彩色 */
         select#room option[value="need_book"] { background-color: var(--color-need-book); color: var(--color-need-book-text); }
@@ -128,93 +135,105 @@
         select#room option[value="32_road"] { background-color: var(--color-32-road); color: var(--color-32-road-text); }
 
         .btn {
-            width: 100%; padding: 10px; background-color: var(--primary-color); color: white;
-            border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer;
-            transition: background 0.2s;
+            width: 100%; padding: 12px; background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); color: white;
+            border: none; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer;
+            transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
         }
-        .btn:hover { background-color: #1a4971; }
+        .btn:hover { background: linear-gradient(135deg, #1d4ed8 0%, #1d4ed8 100%); transform: translateY(-1px); box-shadow: 0 6px 8px -1px rgba(37, 99, 235, 0.3); }
 
         /* ==========================================================================
-           3. 右侧日历主面板
+           3. 右侧日历主面板（现代轻奢质感）
            ========================================================================= */
-        .main-content { flex: 1; display: flex; flex-direction: column; height: 100%; padding: 20px; }
-        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .calendar-title { font-size: 22px; font-weight: bold; color: #1a202c; }
-        .nav-buttons button { padding: 6px 12px; border: 1px solid var(--border-color); background: white; cursor: pointer; border-radius: 4px; font-size: 13px; }
-        .nav-buttons button:hover { background: #edf2f7; }
+        .main-content { flex: 1; display: flex; flex-direction: column; height: 100%; padding: 24px; background: #f8fafc; }
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .calendar-title { font-size: 24px; font-weight: 800; color: #0f172a; letter-spacing: -0.5px; }
+        .nav-buttons { display: flex; gap: 6px; }
+        .nav-buttons button { 
+            padding: 8px 16px; border: 1px solid #cbd5e1; background: white; cursor: pointer; 
+            border-radius: 6px; font-size: 13px; font-weight: 600; color: #475569; transition: all 0.2s;
+        }
+        .nav-buttons button:hover { background: #edf2f7; color: var(--primary-light); border-color: #94a3b8; }
 
         .weekdays {
             display: grid; grid-template-columns: repeat(7, 1fr); text-align: center;
-            font-weight: 600; color: #718096; font-size: 13px; padding-bottom: 8px;
+            font-weight: 700; color: #64748b; font-size: 14px; padding-bottom: 10px;
         }
         .days-grid {
             display: grid; grid-template-columns: repeat(7, 1fr); grid-template-rows: repeat(6, 1fr);
-            flex: 1; background-color: var(--border-color); gap: 1px; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden;
+            flex: 1; background-color: #e2e8f0; gap: 1px; border: 1px solid #cbd5e1; border-radius: 12px; overflow: hidden;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
         }
 
-        /* 单个日历格子 */
+        /* 单个日历格子美化 */
         .day-cell {
-            background-color: white; padding: 4px; display: flex; flex-direction: column;
-            cursor: pointer; position: relative; overflow: hidden;
+            background-color: white; padding: 6px; display: flex; flex-direction: column;
+            cursor: pointer; position: relative; overflow: hidden; transition: all 0.15s ease;
         }
-        .day-cell:hover { filter: brightness(0.97); }
-        .day-cell.other-month { background-color: #edf2f7; color: #cbd5e0; }
-        .day-cell.today { background-color: #fffaf0; }
-        .day-cell.today .day-number { background-color: #dd6b20; color: white; border-radius: 50%; width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; }
+        .day-cell:hover { background-color: #f1f5f9; z-index: 2; box-shadow: inset 0 0 0 2px var(--primary-light); }
+        .day-cell.other-month { background-color: #f1f5f9; color: #94a3b8; opacity: 0.6; }
+        .day-cell.today { background-color: #eff6ff; }
+        .day-cell.today .day-number { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(37,99,235,0.3); }
 
-        .day-number { font-size: 12px; font-weight: 600; margin-bottom: 3px; color: #4a5568; }
-        .cell-events-container { display: flex; flex-direction: column; gap: 2px; flex: 1; overflow: hidden; }
+        .day-number { font-size: 12px; font-weight: 700; margin-bottom: 4px; color: #334155; }
+        .cell-events-container { display: flex; flex-direction: column; gap: 3px; flex: 1; overflow: hidden; }
 
         /* 单元格微型状态标签 */
         .event-tag {
-            font-size: 11px; padding: 1px 4px; border-radius: 3px;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; font-weight: 500;
+            font-size: 11px; padding: 2px 6px; border-radius: 4px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.4; font-weight: 600;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
         }
 
         /* 大面积色彩覆盖逻辑样式 */
         .day-cell.status-need-book { background-color: var(--color-need-book) !important; }
         .day-cell.status-need-book .day-number { color: var(--color-need-book-text); }
 
-        .tag-need_book { background-color: #feb2b2; color: #9b2c2c; }
-        .tag-23_meet { background-color: var(--color-23-meet); color: var(--color-23-meet-text); }
-        .tag-23_chat { background-color: var(--color-23-chat); color: var(--color-23-chat-text); }
-        .tag-27_meet { background-color: var(--color-27-meet); color: var(--color-27-meet-text); }
-        .tag-27_chat { background-color: var(--color-27-chat); color: var(--color-27-chat-text); }
-        .tag-32_road { background-color: var(--color-32-road); color: var(--color-32-road-text); }
+        .tag-need_book { background-color: #fee2e2; color: #991b1b; border-left: 3px solid #ef4444; }
+        .tag-23_meet { background-color: var(--color-23-meet); color: var(--color-23-meet-text); border-left: 3px solid #3b82f6; }
+        .tag-23_chat { background-color: var(--color-23-chat); color: var(--color-23-chat-text); border-left: 3px solid #10b981; }
+        .tag-27_meet { background-color: var(--color-27-meet); color: var(--color-27-meet-text); border-left: 3px solid #22c55e; }
+        .tag-27_chat { background-color: var(--color-27-chat); color: var(--color-27-chat-text); border-left: 3px solid #a855f7; }
+        .tag-32_road { background-color: var(--color-32-road); color: var(--color-32-road-text); border-left: 3px solid #f97316; }
 
         /* ==========================================================================
-           4. 智能流转模态弹窗
+           4. 智能流转模态弹窗美化
            ========================================================================= */
         .modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4);
-            display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 999;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6);
+            display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; z-index: 999;
+            backdrop-filter: blur(4px);
         }
         .modal-overlay.active { opacity: 1; pointer-events: auto; }
-        .modal-card { background: white; border-radius: 8px; width: 540px; max-width: 90%; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
-        .modal-header { padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-        .close-btn { font-size: 24px; cursor: pointer; border: none; background: none; color: #a0aec0; }
-        .modal-body { padding: 16px; overflow-y: auto; flex: 1; }
+        .modal-card { background: white; border-radius: 12px; width: 560px; max-width: 90%; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15); border: 1px solid #e2e8f0; animation: modalSlide 0.2s ease-out; }
+        
+        @keyframes modalSlide { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .modal-header { padding: 18px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border-top-left-radius: 12px; border-top-right-radius: 12px;}
+        .modal-header h3 { font-size: 16px; font-weight: 700; color: #0f172a; }
+        .close-btn { font-size: 26px; cursor: pointer; border: none; background: none; color: #94a3b8; transition: color 0.2s; }
+        .close-btn:hover { color: #475569; }
+        .modal-body { padding: 20px; overflow-y: auto; flex: 1; background: #f8fafc; }
 
         /* 预定清单独立卡片 */
-        .detail-item { border: 1px solid var(--border-color); border-radius: 6px; padding: 14px; margin-bottom: 12px; position: relative; background: #ffffff;}
-        .detail-item-time { font-size: 12px; color: #718096; font-weight: bold; }
-        .detail-item-title { font-size: 14px; font-weight: bold; margin: 4px 0; }
-        .detail-item-meta { font-size: 12px; display: inline-block; padding: 2px 6px; border-radius: 4px; margin-top: 4px; font-weight: 500;}
-        .detail-item-memo { font-size: 12px; color: #4a5568; background: #f7fafc; padding: 6px; border-radius: 4px; margin-top: 6px;}
+        .detail-item { border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 14px; position: relative; background: #ffffff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
+        .detail-item-time { font-size: 13px; color: #64748b; font-weight: 700; display: flex; align-items: center; gap: 4px; }
+        .detail-item-title { font-size: 15px; font-weight: 700; margin: 6px 0; color: #1e293b; }
+        .detail-item-meta { font-size: 12px; display: inline-block; padding: 3px 8px; border-radius: 6px; margin-top: 4px; font-weight: 600; }
+        .detail-item-memo { font-size: 12px; color: #475569; background: #f1f5f9; padding: 8px 12px; border-radius: 6px; margin-top: 10px; border-left: 3px solid #cbd5e1;}
 
         /* 操作按钮组工具栏 */
-        .action-bar { display: flex; gap: 8px; margin-top: 12px; border-top: 1px dashed #edf2f7; padding-top: 10px; justify-content: flex-end; }
-        .btn-sm { padding: 4px 10px; font-size: 12px; border-radius: 4px; cursor: pointer; font-weight: 500; border: none;}
-        .btn-delete { background: #fed7d7; color: #c53030; }
-        .btn-delete:hover { background: #feb2b2; }
-        .btn-convert { background: #ebf8ff; color: #2b6cb0; border: 1px solid #bee3f8; }
-        .btn-convert:hover { background: #dee3f8; }
+        .action-bar { display: flex; gap: 8px; margin-top: 14px; border-top: 1px dashed #e2e8f0; padding-top: 12px; justify-content: flex-end; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; cursor: pointer; font-weight: 600; border: none; transition: all 0.2s;}
+        .btn-delete { background: #fee2e2; color: #991b1b; }
+        .btn-delete:hover { background: #fca5a5; transform: translateY(-1px); }
+        .btn-convert { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+        .btn-convert:hover { background: #dbeafe; transform: translateY(-1px); }
 
         /* 智能就地流转选择框布局 */
-        .quick-convert-box { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; margin-top: 8px; display: flex; flex-direction: column; gap: 8px;}
-        .quick-convert-row { display: flex; gap: 6px; align-items: center;}
+        .quick-convert-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-top: 10px; display: flex; flex-direction: column; gap: 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.01); }
+        .quick-convert-row { display: flex; gap: 8px; align-items: center; }
         
-        .no-data { text-align: center; color: #a0aec0; padding: 20px 0; font-size: 14px; }
+        .no-data { text-align: center; color: #94a3b8; padding: 30px 0; font-size: 14px; font-weight: 500; }
     </style>
 </head>
 <body>
@@ -222,7 +241,7 @@
     <div class="sidebar">
         <div class="sidebar-header">
             <h2>会议室排课看板 🚀</h2>
-            <p>数据双保险版：支持数据本地导出备份</p>
+            <p>数据双保险版：已启用高级蓝色商务主色系</p>
             
             <div class="backup-toolbar">
                 <button class="btn-backup" onclick="exportData()">📤 导出备份(下载文件)</button>
@@ -234,12 +253,12 @@
         <div class="form-container">
             <form id="bookingForm">
                 <div class="form-group">
-                    <label>选择排课日期（可添加多个日期批量处理）*</label>
+                    <label>选择排课日期（可多选批量派课）*</label>
                     <div class="multi-date-box" id="selectedDatesContainer">
                         </div>
                     <div class="date-adder-row">
                         <input type="date" id="dateInput" class="form-control" style="flex: 1;">
-                        <button type="button" class="btn" style="width: auto; padding: 0 12px; font-size: 12px;" onclick="addDateToList()">＋ 添加</button>
+                        <button type="button" class="btn" style="width: auto; padding: 0 16px; font-size: 13px;" onclick="addDateToList()">＋ 添加</button>
                     </div>
                 </div>
                 
@@ -247,7 +266,7 @@
                     <label>时间段 *</label>
                     <div class="time-range">
                         <input type="time" id="startTime" class="form-control" required value="09:00">
-                        <span style="color: #a0aec0;">至</span>
+                        <span style="color: #94a3b8; font-weight: bold;">至</span>
                         <input type="time" id="endTime" class="form-control" required value="10:30">
                     </div>
                 </div>
@@ -287,7 +306,7 @@
                     <textarea id="memo" class="form-control" rows="2" placeholder="讲师、设备等特殊诉求..."></textarea>
                 </div>
 
-                <button type="submit" class="btn">一键保存/批量排课</button>
+                <button type="submit" class="btn">一键保存 / 批量排课</button>
             </form>
         </div>
     </div>
@@ -384,7 +403,7 @@
                 } catch (err) {
                     alert("导入出现致命错误，请确保文件未损坏。");
                 }
-                input.value = ''; // 清空选择
+                input.value = ''; 
             };
             reader.readAsText(file);
         }
@@ -393,7 +412,7 @@
             const container = document.getElementById('selectedDatesContainer');
             container.innerHTML = '';
             if(activeBatchDates.length === 0) {
-                container.innerHTML = '<span style="color: #a0aec0; font-size: 12px;">暂无日期，请在下方选择并添加</span>';
+                container.innerHTML = '<span style="color: #94a3b8; font-size: 12px; font-weight: 500;">暂无日期，请在下方选择并添加</span>';
                 return;
             }
             activeBatchDates.sort().forEach(d => {
@@ -572,7 +591,7 @@
         });
 
         function openModal(dateStr) {
-            document.getElementById('modalDateTitle').innerText = `${dateStr} 场地看板详情与快捷流转`;
+            document.getElementById('modalDateTitle').innerText = `📅 ${dateStr} 场地看板详情与快捷流转`;
             const body = document.getElementById('modalBody');
             body.innerHTML = '';
 
@@ -593,9 +612,9 @@
                     if(b.room === 'need_book') {
                         actionHtml = `
                             <div class="quick-convert-box" id="convert-box-${b.id}">
-                                <span style="font-size: 12px; font-weight: bold; color: #2c5282;">⚡ 预订部已改好？在此一键分配房间：</span>
+                                <span style="font-size: 12px; font-weight: bold; color: #1e3a8a;">⚡ 预订部已改好？在此一键分配房间：</span>
                                 <div class="quick-convert-row">
-                                    <select class="form-control" id="select-convert-${b.id}" style="padding:4px 8px; font-size:12px;">
+                                    <select class="form-control" id="select-convert-${b.id}" style="padding:4px 8px; font-size:12px; height: 28px; border-radius: 6px;">
                                         <option value="23_meet">🏢 23楼：会议室</option>
                                         <option value="23_chat">🏢 23楼：洽谈室</option>
                                         <option value="27_meet">🏢 27楼：会议室</option>
@@ -603,7 +622,7 @@
                                         <option value="32_road">🏛️ 32楼：路演厅</option>
                                     </select>
                                     <button class="btn-sm btn-convert" onclick="executeQuickConvert('${b.id}', '${dateStr}')">确认指派</button>
-                                    <button class="btn-sm btn-delete" style="background:#edf2f7; color:#4a5568;" onclick="deleteBooking('${b.id}', '${dateStr}', true)">不需要了(直接取消)</button>
+                                    <button class="btn-sm btn-delete" style="background:#e2e8f0; color:#334155;" onclick="deleteBooking('${b.id}', '${dateStr}', true)">不需要了</button>
                                 </div>
                             </div>
                         `;
