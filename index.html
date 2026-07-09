@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>会议室预定与课程场地记录日历 - 安全隔离版</title>
+    <title>会议室预定与课程场地记录日历 - 顶级双保险版</title>
     <style>
         /* ==========================================================================
            1. 全局样式与核心商务色彩
@@ -62,6 +62,21 @@
         }
         .sidebar-header h2 { font-size: 18px; color: #1a202c; display: flex; align-items: center; gap: 6px;}
         .sidebar-header p { font-size: 12px; color: #718096; margin-top: 4px; }
+
+        /* 备份工具条样式 */
+        .backup-toolbar {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--border-color);
+        }
+        .btn-backup {
+            flex: 1; padding: 6px; font-size: 12px; background: #edf2f7; color: #4a5568; 
+            border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer; font-weight: 500;
+            text-align: center;
+        }
+        .btn-backup:hover { background: #e2e8f0; }
 
         .form-container { padding: 20px; overflow-y: auto; flex: 1; }
         .form-group { margin-bottom: 14px; }
@@ -204,21 +219,24 @@
 </head>
 <body>
 
-    <!-- 左侧边栏：多选排课表单区 -->
     <div class="sidebar">
         <div class="sidebar-header">
             <h2>会议室排课看板 🚀</h2>
-            <p>已启用独立防冲突数据保护隔离仓</p>
+            <p>数据双保险版：支持数据本地导出备份</p>
+            
+            <div class="backup-toolbar">
+                <button class="btn-backup" onclick="exportData()">📤 导出备份(下载文件)</button>
+                <button class="btn-backup" onclick="document.getElementById('importFile').click()">📥 导入恢复数据</button>
+                <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(this)">
+            </div>
         </div>
         
         <div class="form-container">
             <form id="bookingForm">
-                <!-- 多日期管理容器 -->
                 <div class="form-group">
                     <label>选择排课日期（可添加多个日期批量处理）*</label>
                     <div class="multi-date-box" id="selectedDatesContainer">
-                        <!-- 动态生成的日期筹码标签 -->
-                    </div>
+                        </div>
                     <div class="date-adder-row">
                         <input type="date" id="dateInput" class="form-control" style="flex: 1;">
                         <button type="button" class="btn" style="width: auto; padding: 0 12px; font-size: 12px;" onclick="addDateToList()">＋ 添加</button>
@@ -274,7 +292,6 @@
         </div>
     </div>
 
-    <!-- 右侧主体：主日历 -->
     <div class="main-content">
         <div class="calendar-header">
             <div class="calendar-title" id="calendarTitle">2026年 05月</div>
@@ -290,11 +307,9 @@
         </div>
         
         <div class="days-grid" id="daysGrid">
-            <!-- 动态载入 -->
-        </div>
+            </div>
     </div>
 
-    <!-- 弹窗：单日详情查看与智能就地转换 -->
     <div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
         <div class="modal-card" onclick="event.stopPropagation()">
             <div class="modal-header">
@@ -302,14 +317,10 @@
                 <button class="close-btn" onclick="closeModal()">&times;</button>
             </div>
             <div class="modal-body" id="modalBody">
-                <!-- 动态填充 -->
-            </div>
+                </div>
         </div>
     </div>
 
-    <!-- ==========================================================================
-       5. 智能业务核心核心逻辑脚本
-       ========================================================================= -->
     <script>
         const ROOM_MAP = {
             'need_book': { name: '⚠️待预定', class: 'tag-need_book', bgVar: '--color-need-book' },
@@ -320,17 +331,10 @@
             '32_road': { name: '32F 路演厅', class: 'tag-32_road', bgVar: '--color-32-road' }
         };
 
-        // 【核心防御】使用全新专属独立Key，防止和小游戏撞车
         const DB_KEY = 'ipro_calendar_v2_secure_store';
         
         let currentDate = new Date();
-        // 尝试读取新Key，如果不存在则看看能不能兼容读取一次老Key
-        let bookings = JSON.parse(localStorage.getItem(DB_KEY));
-        if (!bookings) {
-            bookings = JSON.parse(localStorage.getItem('ipro_bookings')) || [];
-            localStorage.setItem(DB_KEY, JSON.stringify(bookings));
-        }
-        
+        let bookings = JSON.parse(localStorage.getItem(DB_KEY)) || [];
         let activeBatchDates = []; 
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -339,6 +343,51 @@
             refreshDateChips();
             renderCalendar();
         });
+
+        // 📤 备份数据导出功能
+        function exportData() {
+            if (bookings.length === 0) {
+                alert("当前没有任何排课数据，无需导出。");
+                return;
+            }
+            const dataStr = JSON.stringify(bookings, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement("a");
+            const date = new Date().toISOString().split('T')[0];
+            a.href = url;
+            a.download = `会议室预定备份数据_${date}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // 📥 备份数据导入功能
+        function importData(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (Array.isArray(imported)) {
+                        bookings = imported;
+                        localStorage.setItem(DB_KEY, JSON.stringify(bookings));
+                        renderCalendar();
+                        alert(`🎉 成功导入并恢复了 ${bookings.length} 条预定记录！`);
+                    } else {
+                        alert("导入失败：文件格式不正确，不是合法的备份文件。");
+                    }
+                } catch (err) {
+                    alert("导入出现致命错误，请确保文件未损坏。");
+                }
+                input.value = ''; // 清空选择
+            };
+            reader.readAsText(file);
+        }
 
         function refreshDateChips() {
             const container = document.getElementById('selectedDatesContainer');
@@ -424,7 +473,6 @@
             cell.className = `day-cell ${isOtherMonth ? 'other-month' : ''} ${isToday ? 'today' : ''}`;
             
             cell.addEventListener('click', () => openModal(dateStr));
-            cell.addEventListener('dblclick', () => openModal(dateStr));
 
             const numberDiv = document.createElement('div');
             numberDiv.className = 'day-number';
