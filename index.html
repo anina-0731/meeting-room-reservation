@@ -161,7 +161,34 @@
         .day-cell.today { background-color: #eff6ff; }
         .day-cell.today .day-number { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(37,99,235,0.3); }
 
-        .day-number { font-size: 12px; font-weight: 700; margin-bottom: 4px; color: #334155; }
+        .day-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+        .day-number { font-size: 12px; font-weight: 700; color: #334155; }
+        
+        /* 着重标记的五角星/圈圈样式 */
+        .important-star-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #fef08a;
+            color: #854d0e;
+            border: 1px solid #fde047;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 1px 5px;
+            border-radius: 10px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+            cursor: pointer;
+            white-space: nowrap;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
         .cell-events-container { display: flex; flex-direction: column; gap: 3px; flex: 1; overflow: hidden; }
 
         .event-tag {
@@ -203,6 +230,27 @@
         .close-btn:hover { color: #475569; }
         .modal-body { padding: 20px; overflow-y: auto; flex: 1; background: #f8fafc; }
 
+        /* 弹窗中着重标记提醒条卡片 */
+        .important-highlight-card {
+            background: #fefce8;
+            border: 1px solid #fef08a;
+            border-radius: 8px;
+            padding: 12px 14px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(234,179,8,0.08);
+        }
+        .important-highlight-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #854d0e;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
         .detail-item { border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 14px; position: relative; background: #ffffff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
         .detail-item-time { font-size: 13px; color: #64748b; font-weight: 700; display: flex; align-items: center; gap: 4px; }
         .detail-item-title { font-size: 15px; font-weight: 700; margin: 6px 0; color: #1e293b; }
@@ -215,6 +263,8 @@
         .btn-delete:hover { background: #fca5a5; transform: translateY(-1px); }
         .btn-convert { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
         .btn-convert:hover { background: #dbeafe; transform: translateY(-1px); }
+        .btn-mark { background: #fef08a; color: #713f12; border: 1px solid #fde047; }
+        .btn-mark:hover { background: #fde047; transform: translateY(-1px); }
 
         .quick-convert-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-top: 10px; display: flex; flex-direction: column; gap: 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.01); }
         .quick-convert-row { display: flex; gap: 8px; align-items: center; }
@@ -227,7 +277,7 @@
     <div class="sidebar">
         <div class="sidebar-header">
             <h2>会议室排课看板 🚀</h2>
-            <p>数据双保险版：支持28楼扩展与全量自定义房间</p>
+            <p>数据双保险版：支持重要日期星号标记与多维分类</p>
             
             <div class="backup-toolbar">
                 <button class="btn-backup" onclick="exportData()">📤 导出备份(下载文件)</button>
@@ -281,7 +331,9 @@
                     <select id="purposeSelect" class="form-control" onchange="toggleCustomPurpose(this.value)">
                         <option value="新员工第一课">新员工第一课</option>
                         <option value="新员工政策宣导">新员工政策宣导</option>
-                        <option value="APN宣讲">APN宣讲</option>
+                        <option value="APN 初级使用">APN 初级使用</option>
+                        <option value="APN 进阶使用">APN 进阶使用</option>
+                        <option value="CRM系统">CRM系统</option>
                         <option value="IPG 1.0">IPG 1.0</option>
                         <option value="IPG领航者计划">IPG领航者计划</option>
                         <option value="IPG 2.0">IPG 2.0</option>
@@ -332,7 +384,6 @@
     </div>
 
     <script>
-        // 静态映射基础数据库
         const BASE_ROOM_MAP = {
             'need_book': { name: '⚠️待预定', class: 'tag-need_book', bgVar: '--color-need-book' },
             '23_meet': { name: '23F 会议室', class: 'tag-23_meet', bgVar: '--color-23-meet' },
@@ -346,13 +397,14 @@
 
         const DB_KEY = 'ipro_calendar_v2_secure_store';
         const CUSTOM_ROOMS_KEY = 'ipro_calendar_custom_rooms';
+        const HIGHLIGHTS_KEY = 'ipro_calendar_important_highlights'; // 保存着重标记提醒字典
         
         let currentDate = new Date();
         let bookings = JSON.parse(localStorage.getItem(DB_KEY)) || [];
-        let customRooms = JSON.parse(localStorage.getItem(CUSTOM_ROOMS_KEY)) || []; // 用户创建的增量房间名数组
+        let customRooms = JSON.parse(localStorage.getItem(CUSTOM_ROOMS_KEY)) || []; 
+        let highlights = JSON.parse(localStorage.getItem(HIGHLIGHTS_KEY)) || {}; // { 'YYYY-MM-DD': '开会' }
         let activeBatchDates = []; 
 
-        // 动态获取合并后的全量房间配置字典
         function getFullRoomMap() {
             const map = { ...BASE_ROOM_MAP };
             customRooms.forEach(roomName => {
@@ -369,19 +421,13 @@
             renderCalendar();
         });
 
-        // 动态刷新表单中所有的房间下拉菜单（支持动态写入自定义历史数据）
         function syncRoomDropdowns() {
             const roomSelect = document.getElementById('room');
-            
-            // 保留固定的前几项加上最后一项
             const valuesToKeep = ['need_book','23_meet','23_chat','27_meet','27_chat','28_meet','28_chat','32_road','CUSTOM_ROOM'];
             Array.from(roomSelect.options).forEach(opt => {
-                if(!valuesToKeep.includes(opt.value)) {
-                    roomSelect.removeChild(opt);
-                }
+                if(!valuesToKeep.includes(opt.value)) roomSelect.removeChild(opt);
             });
 
-            // 逆向插在“手动填写”前面
             customRooms.forEach(roomName => {
                 const opt = document.createElement('option');
                 opt.value = roomName;
@@ -390,12 +436,15 @@
             });
         }
 
-        // 📤 备份数据导出
+        // 📤 备份导出
         function exportData() {
-            if (bookings.length === 0) return alert("当前没有任何排课数据，无需导出。");
+            if (bookings.length === 0 && Object.keys(highlights).length === 0) {
+                return alert("当前没有任何排课及标记数据，无需导出。");
+            }
             const payload = {
                 bookings: bookings,
-                customRooms: customRooms
+                customRooms: customRooms,
+                highlights: highlights
             };
             const dataStr = JSON.stringify(payload, null, 2);
             const blob = new Blob([dataStr], { type: "application/json" });
@@ -409,7 +458,7 @@
             URL.revokeObjectURL(url);
         }
 
-        // 📥 备份数据导入
+        // 📥 备份导入
         function importData(input) {
             const file = input.files[0];
             if (!file) return;
@@ -423,17 +472,19 @@
                         } else {
                             bookings = imported.bookings || [];
                             customRooms = imported.customRooms || [];
+                            highlights = imported.highlights || {};
                         }
                         localStorage.setItem(DB_KEY, JSON.stringify(bookings));
                         localStorage.setItem(CUSTOM_ROOMS_KEY, JSON.stringify(customRooms));
+                        localStorage.setItem(HIGHLIGHTS_KEY, JSON.stringify(highlights));
                         syncRoomDropdowns();
                         renderCalendar();
-                        alert(`🎉 成功恢复数据记录！`);
+                        alert(`🎉 成功还原数据！`);
                     } else {
-                        alert("导入失败：文件格式不符合规范。");
+                        alert("导入失败：文件格式不规范。");
                     }
                 } catch (err) {
-                    alert("导入出现错误，请确保文件未损坏。");
+                    alert("导入失败，文件可能损坏。");
                 }
                 input.value = ''; 
             };
@@ -535,10 +586,24 @@
             cell.className = `day-cell ${isOtherMonth ? 'other-month' : ''} ${isToday ? 'today' : ''}`;
             cell.addEventListener('click', () => openModal(dateStr));
 
+            const dayHeader = document.createElement('div');
+            dayHeader.className = 'day-header-row';
+
             const numberDiv = document.createElement('div');
             numberDiv.className = 'day-number';
             numberDiv.innerHTML = `${dayNum}`;
-            cell.appendChild(numberDiv);
+            dayHeader.appendChild(numberDiv);
+
+            // 检查该日期是否有五角星着重标记
+            if (highlights[dateStr]) {
+                const starBadge = document.createElement('span');
+                starBadge.className = 'important-star-badge';
+                starBadge.innerText = `⭐ ${highlights[dateStr]}`;
+                starBadge.title = `着重提醒：${highlights[dateStr]}`;
+                dayHeader.appendChild(starBadge);
+            }
+
+            cell.appendChild(dayHeader);
 
             const eventsContainer = document.createElement('div');
             eventsContainer.className = 'cell-events-container';
@@ -582,7 +647,34 @@
             renderCalendar();
         }
 
-        // 表单保存数据
+        // 着重标记此日期的交互方法
+        function triggerMarkImportantDate(dateStr) {
+            const hasExisting = highlights[dateStr];
+            let userChoice = prompt(
+                `📌 是否要着重标记【${dateStr}】？\n\n请在下方输入选项数字，或直接输入自定义提醒内容：\n1. 开会\n2. 预定会议室\n3. 取消现有标记\n\n直接输入文字（如：领航者计划答辩）：`,
+                hasExisting ? hasExisting : "1"
+            );
+
+            if (userChoice === null) return; // 取消操作
+
+            userChoice = userChoice.trim();
+            if (userChoice === "3" || userChoice === "") {
+                delete highlights[dateStr];
+                alert(`已清除【${dateStr}】的着重标记。`);
+            } else if (userChoice === "1") {
+                highlights[dateStr] = "开会";
+            } else if (userChoice === "2") {
+                highlights[dateStr] = "预定会议室";
+            } else {
+                highlights[dateStr] = userChoice;
+            }
+
+            localStorage.setItem(HIGHLIGHTS_KEY, JSON.stringify(highlights));
+            openModal(dateStr);
+            renderCalendar();
+        }
+
+        // 保存排课表单数据
         document.getElementById('bookingForm').addEventListener('submit', (e) => {
             e.preventDefault();
             if(activeBatchDates.length === 0) return alert('提交失败：请至少选择一个排课日期！');
@@ -595,13 +687,11 @@
 
             if (startTime >= endTime) return alert('时间差错：结束时间必须晚于开始时间！');
 
-            // 1. 处理自定义房间的逻辑
             let finalRoomValue = roomSelectValue;
             if (roomSelectValue === 'CUSTOM_ROOM') {
                 const customInputName = document.getElementById('customRoomName').value.trim();
                 if (!customInputName) return alert('请输入自定义房间名称！');
                 
-                // 如果是新输入的空间名字，追加进本地并刷新下拉菜单
                 if (!customRooms.includes(customInputName)) {
                     customRooms.push(customInputName);
                     localStorage.setItem(CUSTOM_ROOMS_KEY, JSON.stringify(customRooms));
@@ -610,14 +700,12 @@
                 finalRoomValue = customInputName;
             }
 
-            // 2. 处理用途
             let finalPurpose = purposeSelect;
             if (purposeSelect === 'CUSTOM') {
                 finalPurpose = document.getElementById('customPurpose').value.trim();
                 if (!finalPurpose) return alert('请输入自定义用途名称！');
             }
 
-            // 3. 批量写入
             activeBatchDates.forEach(date => {
                 bookings.push({
                     id: `${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
@@ -638,11 +726,30 @@
             renderCalendar();
         });
 
-        // 弹窗看板和智能快捷转换
+        // 弹窗看板
         function openModal(dateStr) {
-            document.getElementById('modalDateTitle').innerText = `📅 ${dateStr} 场地看板详情与指派`;
+            document.getElementById('modalDateTitle').innerText = `📅 ${dateStr} 场地看板详情`;
             const body = document.getElementById('modalBody');
             body.innerHTML = '';
+
+            // 如果该日期有标记，显示着重提醒卡片
+            if (highlights[dateStr]) {
+                const highlightCard = document.createElement('div');
+                highlightCard.className = 'important-highlight-card';
+                highlightCard.innerHTML = `
+                    <div class="important-highlight-info">
+                        <span>⭐ 重要着重提醒：</span>
+                        <strong>${highlights[dateStr]}</strong>
+                    </div>
+                    <button class="btn-sm btn-mark" onclick="triggerMarkImportantDate('${dateStr}')">修改/清除</button>
+                `;
+                body.appendChild(highlightCard);
+            } else {
+                const markBar = document.createElement('div');
+                markBar.style.cssText = 'display: flex; justify-content: flex-end; margin-bottom: 12px;';
+                markBar.innerHTML = `<button class="btn-sm btn-mark" onclick="triggerMarkImportantDate('${dateStr}')">⭐ 着重标记此日期（开会/预定/提醒）</button>`;
+                body.appendChild(markBar);
+            }
 
             const dayBookings = bookings
                 .filter(b => b.date === dateStr)
@@ -651,7 +758,7 @@
             const ROOM_MAP = getFullRoomMap();
 
             if (dayBookings.length === 0) {
-                body.innerHTML = '<div class="no-data">当天无任何排课及场地安排记录。</div>';
+                body.appendChild(document.createRange().createContextualFragment('<div class="no-data">当天无任何排课及场地安排记录。</div>'));
             } else {
                 dayBookings.forEach(b => {
                     const roomInfo = ROOM_MAP[b.room] || { name: b.room, class: 'tag-custom_room' };
@@ -660,7 +767,6 @@
                     
                     let actionHtml = '';
                     if(b.room === 'need_book') {
-                        // 快捷指派区域：动态填充已有全量选项
                         let optionsHtml = '';
                         Object.keys(ROOM_MAP).forEach(k => {
                             if(k !== 'need_book') {
